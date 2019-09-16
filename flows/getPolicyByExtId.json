@@ -1,0 +1,38 @@
+{
+  "name": "GetPolicybyExternalID",
+  "flow": {
+    "name": "GetPolicybyExternalID",
+    "description": "COO - Get Policy by External ID(Liability) ",
+    "steps": [
+      {
+        "stepType": "apiEnrich",
+        "stepArgs": "soapSlim",
+        "color": "rgb(247,225,211)",
+        "displayName": "SOAP Http",
+        "isChecked": true,
+        "isSelected": true,
+        "config": {
+          "endpoint": {
+            "url": "http://{{$env.URL}}/idit-web/ws?methodName=GetPolicyByExtID&serviceName=IDITServices&wsdl"
+          },
+          "soapRequest": {
+            "iDWrapperIVO.attributes.main": "true",
+            "iDWrapperIVO.externalID": "{{policyExtNo}}"
+          },
+          "httpHeaders": {
+            "userName": "{{$env.userName}}",
+            "password": "{{$env.password}}"
+          },
+          "targetPath": "result.policy",
+          "method": "IDITServicesGetPolicyByExtID.IDITServicesGetPolicyByExtIDInterface.IDITServicesGetPolicyByExtID"
+        }
+      }
+    ]
+  },
+  "inputSchema": {
+    "policyExtNo": "PL-1000000402383/00"
+  },
+  "createDate": "2019-09-06T12:23:53.245Z",
+  "tag": null,
+  "id": "5d724fd934d2bf849e9f65b0"
+}

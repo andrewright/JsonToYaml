@@ -1,0 +1,379 @@
+{
+  "name": "iditCreateContact",
+  "flow": {
+    "name": "iditCreateContact",
+    "description": "A flow to create a new IDIT contact. The input of the flow is an object of the contact details. The result of the flow is the contact Id of the new created contact. The flow contains 7 steps.",
+    "steps": [
+      {
+        "description": "map list type input fields",
+        "stepType": "mapEnrich",
+        "stepArgs": "jsonata",
+        "config": {
+          "maps": [
+            {
+              "jsonata": "identifiers ~> |$|{'idTypeRef': {'attributes': {'id': identifierTypeId}}},['identifierTypeId']| ~> |$|{'countryRef': {'attributes': {'id':countryId}}},['countryId']|",
+              "targetPath": "intermediateContact.identifiersList"
+            },
+            {
+              "jsonata": "affinityMemberships ~> |$|{'affinityVORef': {'attributes': {'id': affinityTypeId}}},['affinityTypeId']|",
+              "targetPath": "intermediateContact.affinityMembershipsList"
+            },
+            {
+              "jsonata": "addresses ~> |$|{'addressIVO': {'countryVORef': {'attributes': {'id': countryId}}, 'zipCode': postalCode, 'cityName': city, 'streetName': street, 'houseNr': streetNumber, 'apartmentNr': addressLine2}}, ['countryId', 'postalCode', 'city', 'street', 'streetNumber', 'addressLine2']| ~> |$|{'addressTypeVORef': {'attributes': {'id': addressTypeId}}, 'languageVORef': {'attributes': {'id': '101'}}}, ['addressTypeId']|",
+              "targetPath": "intermediateContact.addressesList"
+            },
+            {
+              "jsonata": "emails ~> |$|{'emailTypeVORef': {'attributes': {'id': emailTypeId}}}, ['emailTypeId']|",
+              "targetPath": "intermediateContact.emailsList"
+            },
+            {
+              "jsonata": "phoneNumbers ~> |$|{'telephoneTypeRef': {'attributes': {'id': telephoneTypeId}}, 'countryDialCodeRef': {'attributes': {'id': countryDialCodeId}}, 'telephonePrefixVORef': {'attributes': {'id': telephonePrefixId}}}, ['telephoneTypeId', 'countryDialCodeId', 'telephonePrefixId']|",
+              "targetPath": "intermediateContact.phoneNumbersList"
+            },
+            {
+              "jsonata": "bankAccounts ~> |$|{'paymentChanelVORef': {'attributes': {'id': '1'}}, 'bankExtNum': bankId, 'countryVORef': {'attributes': {'id': countryId}}, 'accountNr': accountNumber, 'ibanReference': ibanCode, 'bban': $substring(ibanCode, 4), 'checkDigits': $substring(ibanCode, 2, 2)}, ['countryId', 'bankId', 'accountNumber', 'ibanCode']|",
+              "targetPath": "intermediateContact.bankAccounts"
+            },
+            {
+              "jsonata": "creditCards ~> |$|{'paymentChanelVORef': {'attributes': {'id': '2'}}, 'bankExtNum': cardTypeId, 'countryVORef': {'attributes': {'id': countryId}}, 'accountNr': cardNumber, 'creditCardHolderName': holderName}, ['countryId', 'cardNumber', 'holderName', 'cardTypeId']|",
+              "targetPath": "intermediateContact.creditCards"
+            },
+            {
+              "jsonata": "$append(intermediateContact.bankAccounts, intermediateContact.creditCards)",
+              "targetPath": "intermediateContact.bankAccounts"
+            }
+          ]
+        },
+        "isSelected": false
+      },
+      {
+        "description": "map simple input fields and map intermediate list type fields",
+        "stepType": "mapEnrich",
+        "stepArgs": "jsonata",
+        "config": {
+          "maps": [
+            {
+              "jsonata": "firstName",
+              "targetPath": "newContact.firstName"
+            },
+            {
+              "jsonata": "name",
+              "targetPath": "newContact.name"
+            },
+            {
+              "jsonata": "titleId",
+              "targetPath": "newContact.titleVORef.attributes.id"
+            },
+            {
+              "jsonata": "genderId",
+              "targetPath": "newContact.genderVORef.attributes.id"
+            },
+            {
+              "jsonata": "preferredContactMethodId",
+              "targetPath": "newContact.preferredDeliveryTypeRef.attributes.id"
+            },
+            {
+              "jsonata": "dateOfBirth",
+              "targetPath": "newContact.dateOfBirth"
+            },
+            {
+              "jsonata": "intermediateContact.addressesList",
+              "targetPath": "newContact.contactAddressList.contactAddress"
+            },
+            {
+              "jsonata": "intermediateContact.phoneNumbersList",
+              "targetPath": "newContact.contactTelephoneList.contactTelephone"
+            },
+            {
+              "jsonata": "intermediateContact.emailsList",
+              "targetPath": "newContact.contactEmailList.contactEmail"
+            },
+            {
+              "jsonata": "intermediateContact.identifiersList",
+              "targetPath": "newContact.contactIdentifierList.contactIdentifier"
+            },
+            {
+              "jsonata": "intermediateContact.affinityMembershipsList",
+              "targetPath": "newContact.contactAffinityMembershipList.contactAffinityMembership"
+            },
+            {
+              "jsonata": "intermediateContact.bankAccounts",
+              "targetPath": "newContact.contactBankAccountList.contactBankAccount"
+            },
+            {
+              "jsonata": "preferredContactMethod.methodId",
+              "targetPath": "newContact.preferredDeliveryTypeRef.attributes.id"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.addressTypeId",
+              "targetPath": "newContact.preferredDeliveryAddressVO.addressTypeVORef.attributes.id"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.postalCode",
+              "targetPath": "newContact.preferredDeliveryAddressVO.addressIVO.zipCode"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.countryId",
+              "targetPath": "newContact.preferredDeliveryAddressVO.addressIVO.countryVORef.attributes.id"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.street",
+              "targetPath": "newContact.preferredDeliveryAddressVO.addressIVO.streetName"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.city",
+              "targetPath": "newContact.preferredDeliveryAddressVO.addressIVO.cityName"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.streetNumber",
+              "targetPath": "newContact.preferredDeliveryAddressVO.addressIVO.houseNr"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.addressLine2",
+              "targetPath": "newContact.preferredDeliveryAddressVO.addressIVO.apartmentNr"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.emailTypeId",
+              "targetPath": "newContact.preferredDeliveryAddressVO.emailTypeVORef.attributes.id"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.email",
+              "targetPath": "newContact.preferredDeliveryAddressVO.email"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.telephoneTypeId",
+              "targetPath": "newContact.preferredDeliveryAddressVO.telephoneTypeRef.attributes.id"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.telephoneNumber",
+              "targetPath": "newContact.preferredDeliveryAddressVO.telephoneNumber"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.countryDialCodeId",
+              "targetPath": "newContact.preferredDeliveryAddressVO.countryDialCodeRef.attributes.id"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.telephonePrefixId",
+              "targetPath": "newContact.preferredDeliveryAddressVO.telephonePrefixVORef.attributes.id"
+            },
+            {
+              "jsonata": "preferredContactMethod.deliveryDetails.telephonePrefix",
+              "targetPath": "newContact.preferredDeliveryAddressVO.telephonePrefix"
+            },
+            {
+              "jsonata": "'1'",
+              "targetPath": "newContact.entityTypeVORef.attributes.id"
+            },
+            {
+              "jsonata": "'true'",
+              "targetPath": "newContact.attributes.main"
+            },
+            {
+              "jsonata": "'101'",
+              "targetPath": "newContact.languageRef.id"
+            }
+          ]
+        },
+        "isSelected": false
+      },
+      {
+        "description": "call IDIT GetPresentationReference service to get preffered delivery types",
+        "stepType": "apiEnrich",
+        "stepArgs": "soapSlim",
+        "config": {
+          "endpoint": {
+            "url": "http://{{$env.URL}}/idit-web/ws?serviceName=IDITServices&methodName=GetPresentationReference&wsdl"
+          },
+          "method": "IDITServicesGetPresentationReference.IDITServicesGetPresentationReferenceInterface.IDITServicesGetPresentationReference",
+          "targetPath": "prefferedDeliveryTypes",
+          "soapRequest": {
+            "presentationReferenceWrapperIVO.attributes.main": "true",
+            "presentationReferenceWrapperIVO.externalID": "507"
+          },
+          "httpHeaders": {
+            "userName": "{{$env.userName}}",
+            "password": "{{$env.password}}"
+          }
+        },
+        "isSelected": false
+      },
+      {
+        "description": "get preffered delivery types and map it to contact preferred delivery object",
+        "stepType": "mapEnrich",
+        "stepArgs": "jsonata",
+        "config": {
+          "maps": [
+            {
+              "jsonata": "$map(prefferedDeliveryTypes.presentationReferencesIVO.presentationReferencesList.presentationReferences, function($v) {{'id': $v.pk, 'description' : $v.value, 'typeAndlang': ($types := [{'id': '2', 'type':'ContactAddressIVO', 'lang': '101'}, {'id': '4', 'type':'ContactAddressIVO', 'lang': '101'}, {'id': '5', 'type':'ContactAddressIVO', 'lang': '101'}, {'id': '1', 'type':'ContactTelephoneIVO'}, {'id': '10007', 'type':'ContactTelephoneIVO'}, {'id': '3', 'type':'ContactEmailIVO'}]; {'type': $types[id=$v.pk].type, 'lang': $types[id=$v.pk].lang})}})",
+              "targetPath": "prefferedDeliveryTypes"
+            },
+            {
+              "jsonata": "prefferedDeliveryTypes[id=$$.preferredContactMethod.methodId].typeAndlang.type",
+              "targetPath": "newContact.preferredDeliveryAddressVO.attributes.type"
+            },
+            {
+              "jsonata": "prefferedDeliveryTypes[id=$$.preferredContactMethod.methodId].typeAndlang.lang",
+              "targetPath": "newContact.preferredDeliveryAddressVO.languageVORef.attributes.id"
+            }
+          ]
+        },
+        "isSelected": false
+      },
+      {
+        "description": "call IDIT createContact service",
+        "stepType": "apiEnrich",
+        "stepArgs": "soapSlim",
+        "config": {
+          "endpoint": {
+            "url": "http://{{$env.URL}}/idit-web/ws?serviceName=IDITServices&methodName=CreateContact&wsdl"
+          },
+          "method": "IDITServicesCreateContact.IDITServicesCreateContactInterface.IDITServicesCreateContact",
+          "targetPath": "result",
+          "soapRequest": {
+            "interfaces-root:contactIVO.0": "{{newContact}}"
+          },
+          "httpHeaders": {
+            "userName": "{{$env.userName}}",
+            "password": "{{$env.password}}"
+          }
+        },
+        "isSelected": true
+      },
+      {
+        "description": "format the final service result",
+        "stepType": "mapEnrich",
+        "stepArgs": "jsonata",
+        "config": {
+          "maps": [
+            {
+              "jsonata": "result.iDWrapperIVO[0] {'contactId': identifier}",
+              "targetPath": "result"
+            }
+          ]
+        },
+        "isSelected": false
+      },
+      {
+        "decription": "delete input data from the doc and the original result",
+        "stepType": "removedata",
+        "config": {
+          "paths": [
+            {
+              "removePath": "newContact"
+            },
+            {
+              "removePath": "intermediateContact"
+            },
+            {
+              "removePath": "prefferedDeliveryTypes"
+            },
+            {
+              "removePath": "result.iDWrapperIVO"
+            }
+          ]
+        },
+        "isSelected": false
+      }
+    ]
+  },
+  "inputSchema": {
+    "firstName": "Jack",
+    "name": "Jackson",
+    "titleId": "1",
+    "genderId": "2",
+    "dateOfBirth": "1982-04-05T00:00:00",
+    "identifiers": [
+      {
+        "identifierTypeId": "6",
+        "idValue": "1111111",
+        "countryId": "2"
+      },
+      {
+        "identifierTypeId": "1",
+        "idValue": "2222222",
+        "countryId": "2"
+      }
+    ],
+    "affinityMemberships": [
+      {
+        "affinityTypeId": "13027",
+        "membershipId": "33333333",
+        "remarks": "this is the best golf club"
+      }
+    ],
+    "preferredContactMethod": {
+      "methodId": "3",
+      "deliveryDetails": {
+        "emailTypeId": "1",
+        "email": "jack.jackson@mail.com"
+      }
+    },
+    "addresses": [
+      {
+        "postalCode": "77777",
+        "countryId": "149",
+        "street": "Hertzel",
+        "city": "Tel Aviv",
+        "streetNumber": "223",
+        "addressLine2": "apt. 6B",
+        "addressTypeId": "2"
+      },
+      {
+        "postalCode": "55555",
+        "countryId": "151",
+        "street": "Harokmim",
+        "city": "Holon",
+        "streetNumber": "26",
+        "addressLine2": "apt. 6B",
+        "addressTypeId": "1"
+      }
+    ],
+    "emails": [
+      {
+        "emailTypeId": "1",
+        "email": "jack.jackson@mail.com"
+      }
+    ],
+    "phoneNumbers": [
+      {
+        "telephoneNumber": "9042131",
+        "telephoneTypeId": "3",
+        "countryDialCodeId": "1",
+        "telephonePrefixId": "1",
+        "telephonePrefix": "02"
+      },
+      {
+        "telephoneNumber": "9319787",
+        "telephoneTypeId": "4",
+        "countryDialCodeId": "1",
+        "telephonePrefixId": "1",
+        "telephonePrefix": "02"
+      }
+    ],
+    "bankAccounts": [
+      {
+        "countryId": "153",
+        "bankId": "",
+        "bankName": "Diskunt",
+        "branchName": "123",
+        "accountNumber": "ab-123456",
+        "ibanCode": "NO6862638376794",
+        "bicCode": "87687",
+        "swiftCode": "hu-09870980"
+      }
+    ],
+    "creditCards": [
+      {
+        "cardNumber": "4336590349879905",
+        "holderName": "Brooklyn Baker",
+        "validDate": "2025-03-28T00:00:00",
+        "cvcCode": "114",
+        "cardTypeId": "28807",
+        "token": "12345"
+      }
+    ]
+  },
+  "createDate": "2019-08-11T11:21:25.974Z",
+  "tag": null,
+  "id": "5d4ffa361d75d84a57ed6490"
+}

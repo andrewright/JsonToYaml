@@ -1,0 +1,16 @@
+{
+  "name": "jsontoyaml",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js --input ./flows/ --output ./flows-yaml/"
+  },
+  "author": "Andrew Garbuzov",
+  "license": "ISC",
+  "dependencies": {
+    "cli-color": "^1.4.0",
+    "swagger-merger": "^1.4.3",
+    "yargs": "^14.0.0"
+  }
+}

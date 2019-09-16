@@ -1,0 +1,120 @@
+{
+  "name": "iditCreateTaskForContact",
+  "flow": {
+    "name": "iditCreateTaskForContact",
+    "description": "A flow to create a task in Idit. The input of the flow is task Id and task entities. The result of the flow is a success flag. The flow contains 5 steps.",
+    "steps": [
+      {
+        "description": "map service base params",
+        "stepType": "mapEnrich",
+        "config": {
+          "maps": [
+            {
+              "value": "{{$env.URL}}",
+              "targetPath": "serviceParams.endpointUrlHost"
+            },
+            {
+              "value": "IDITServices",
+              "targetPath": "serviceParams.serviceName"
+            },
+            {
+              "value": {
+                "userName": "{{$env.userName}}",
+                "password": "{{$env.password}}"
+              },
+              "targetPath": "serviceParams.httpHeaders"
+            }
+          ]
+        },
+        "isSelected": false,
+        "isChecked": true
+      },
+      {
+        "description": "map the task entities list",
+        "stepType": "mapEnrich",
+        "stepArgs": "jsonata",
+        "config": {
+          "maps": [
+            {
+              "jsonata": "contactId",
+              "targetPath": "intermediateData.taskEntities.0.identifier"
+            },
+            {
+              "jsonata": "'310'",
+              "targetPath": "intermediateData.taskEntities.0.entityNr"
+            },
+            {
+              "jsonata": "entityExternalNumber",
+              "targetPath": "intermediateData.taskEntities.0.externalID"
+            }
+          ]
+        },
+        "isSelected": false,
+        "isChecked": true
+      },
+      {
+        "stepType": "apiEnrich",
+        "stepArgs": "restSlim",
+        "isSelected": false,
+        "description": "call IDIT service to trigger a workflow",
+        "config": {
+          "endpoint": {
+            "url": "{{`http://${serviceParams.endpointUrlHost}/idit-web/api/workflow`}}",
+            "method": "POST"
+          },
+          "targetPath": "result",
+          "body": {
+            "actionId": "{{taskId}}",
+            "eventEntities": "{{intermediateData.taskEntities}}"
+          },
+          "headers": "{{serviceParams.httpHeaders}}"
+        },
+        "isChecked": true
+      },
+      {
+        "description": "format the final result",
+        "stepType": "mapEnrich",
+        "stepArgs": "jsonata",
+        "config": {
+          "maps": [
+            {
+              "jsonata": "result {'taskCreated': booleanValue}",
+              "targetPath": "result"
+            }
+          ]
+        },
+        "isSelected": false,
+        "isChecked": true
+      },
+      {
+        "description": "delete input and inital data from the doc",
+        "stepType": "removedata",
+        "config": {
+          "paths": [
+            {
+              "removePath": "taskId"
+            },
+            {
+              "removePath": "intermediateData"
+            },
+            {
+              "removePath": "entityId"
+            },
+            {
+              "removePath": "serviceParams"
+            }
+          ]
+        },
+        "isSelected": false,
+        "isChecked": true
+      }
+    ]
+  },
+  "inputSchema": {
+    "taskId": "9055",
+    "contactId": "29424"
+  },
+  "createDate": "2019-08-11T11:21:26.220Z",
+  "tag": null,
+  "id": "5d4ffa361d75d8a4deed6492"
+}
